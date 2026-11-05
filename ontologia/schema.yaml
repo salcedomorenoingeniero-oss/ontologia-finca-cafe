@@ -1,0 +1,148 @@
+# Ontología MarcaEjemplo (estilo Palantir: object types, properties, link types, actions)
+version: 1
+actualizado: 2026-11-02
+fuente_datos: finca.db (en el PC: copia de finca.db en raw/finca-datos)
+object_types:
+  - nombre: "Finca"
+    tabla_db: null
+    propiedades: [nombre, municipio, propietario, administrador, altitud, hectareas_totales]
+    acciones: [registrar_lote]
+  - nombre: "Lote"
+    tabla_db: lote
+    propiedades: [id, nombre, numero, hectareas, variedad, arboles, notas, poligono_gps]
+    acciones: [crear_lote, actualizar_lote]
+  - nombre: "Persona"
+    tabla_db: persona
+    propiedades: [id, nombre, rol, telefono, activo]
+    acciones: [crear_persona]
+  - nombre: "Actividad-Evento"
+    tabla_db: actividad
+    propiedades: [id, fecha, labor, jornales, valor_jornal, costo_cop, evento, ref]
+    acciones: [registrar_jornal, agrupar_evento]
+  - nombre: "Siembra"
+    tabla_db: siembra
+    propiedades: [fecha, tipo, variedad, dist_planta_m, dist_surco_m, plantas, fecha_renovacion]
+    acciones: [registrar_siembra]
+  - nombre: "Floración"
+    tabla_db: floracion
+    propiedades: [fecha, calificacion, control_roya, control_broca, cosecha_estimada]
+    acciones: [registrar_floracion]
+  - nombre: "Insumo"
+    tabla_db: null
+    propiedades: [nombre, tipo (fertilizante, fungicida, insecticida, herbicida, biológico, colino), ingrediente_activo, grado]
+    acciones: [crear_insumo]
+  - nombre: "Compra"
+    tabla_db: compra
+    propiedades: [fecha, insumo, proveedor, cantidad, unidad, total_cop]
+    acciones: [registrar_compra]
+  - nombre: "Pago"
+    tabla_db: pago
+    propiedades: [fecha, concepto (kg/jornal/otro), cantidad, tarifa_cop, total_cop]
+    acciones: [registrar_pago]
+  - nombre: "Deuda"
+    tabla_db: deuda
+    propiedades: [fecha, acreedor, concepto, monto_cop, interes_pct, saldo_cop, estado]
+    acciones: [abonar_deuda]
+  - nombre: "Recolección"
+    tabla_db: recoleccion
+    propiedades: [fecha, kg_cereza, fuente]
+    acciones: [registrar_recoleccion]
+  - nombre: "Beneficio"
+    tabla_db: beneficio
+    propiedades: [fecha_inicio, fecha_fin, kg_cereza, kg_pergamino_seco, humedad, proceso]
+    acciones: [registrar_beneficio]
+  - nombre: "Lote de café-Microlote"
+    tabla_db: null
+    propiedades: [codigo, kg_pergamino, proceso, puntaje_taza, notas_cata, estado]
+    acciones: [crear_microlote, registrar_cata]
+  - nombre: "Venta"
+    tabla_db: venta
+    propiedades: [fecha, comprador, producto, kg, precio_kg_cop, total_cop, factor_rendimiento]
+    acciones: [registrar_venta]
+  - nombre: "Comprador"
+    tabla_db: null
+    propiedades: [nombre, tipo (FNC, cooperativa, exportador, importador, tostador), país, contacto, requisitos]
+    acciones: [registrar_comprador]
+  - nombre: "Mercado"
+    tabla_db: null
+    propiedades: [nombre, país/región, regulación, precio_referencia]
+    acciones: [—]
+  - nombre: "Certificación"
+    tabla_db: null
+    propiedades: [nombre, entidad, vigencia, requisitos, costo]
+    acciones: [—]
+  - nombre: "Contenido-Publicación"
+    tabla_db: null
+    propiedades: [fecha, canal (LinkedIn), idioma, formato, tema, estado (borrador/aprobado/publicado), metricas]
+    acciones: [crear_borrador, aprobar (sólo Administrador), registrar_metricas]
+  - nombre: "Indicador"
+    tabla_db: null
+    propiedades: [nombre, formula, valor, fecha_calculo, fuente_datos]
+    acciones: [recalcular (tools/sync_finca.py)]
+  - nombre: "Fuente"
+    tabla_db: null
+    propiedades: [titulo, organizacion, url, archivo_raw, fecha_descarga]
+    acciones: [ingest]
+link_types:
+  - {origen: "Finca", relacion: "tiene", destino: "Lote"}
+  - {origen: "Finca", relacion: "marca", destino: "MarcaEjemplo"}
+  - {origen: "Lote", relacion: "pertenece_a", destino: "Finca"}
+  - {origen: "Lote", relacion: "tiene", destino: "Siembra"}
+  - {origen: "Lote", relacion: "tiene", destino: "Floración"}
+  - {origen: "Lote", relacion: "tiene", destino: "Actividad-Evento"}
+  - {origen: "Lote", relacion: "tiene", destino: "Recolección"}
+  - {origen: "Lote", relacion: "tiene", destino: "Compra"}
+  - {origen: "Persona", relacion: "realiza", destino: "Actividad-Evento"}
+  - {origen: "Persona", relacion: "realiza", destino: "Recolección"}
+  - {origen: "Persona", relacion: "recibe", destino: "Pago"}
+  - {origen: "Persona", relacion: "debe", destino: "Deuda"}
+  - {origen: "Actividad-Evento", relacion: "en", destino: "Lote"}
+  - {origen: "Actividad-Evento", relacion: "por", destino: "Persona"}
+  - {origen: "Actividad-Evento", relacion: "usa", destino: "Insumo"}
+  - {origen: "Actividad-Evento", relacion: "pagada_por", destino: "Pago"}
+  - {origen: "Siembra", relacion: "en", destino: "Lote"}
+  - {origen: "Siembra", relacion: "usa", destino: "Insumo"}
+  - {origen: "Floración", relacion: "en", destino: "Lote"}
+  - {origen: "Floración", relacion: "dispara", destino: "Actividad-Evento"}
+  - {origen: "Insumo", relacion: "comprado_en", destino: "Compra"}
+  - {origen: "Insumo", relacion: "aplicado_en", destino: "Actividad-Evento"}
+  - {origen: "Compra", relacion: "de", destino: "Insumo"}
+  - {origen: "Compra", relacion: "para", destino: "Lote"}
+  - {origen: "Compra", relacion: "financiada_por", destino: "Deuda"}
+  - {origen: "Pago", relacion: "a", destino: "Persona"}
+  - {origen: "Pago", relacion: "por", destino: "Recolección"}
+  - {origen: "Pago", relacion: "por", destino: "Actividad-Evento"}
+  - {origen: "Deuda", relacion: "deudor", destino: "Persona"}
+  - {origen: "Deuda", relacion: "para", destino: "Lote"}
+  - {origen: "Deuda", relacion: "financia", destino: "Compra"}
+  - {origen: "Deuda", relacion: "financia", destino: "Pago"}
+  - {origen: "Recolección", relacion: "por", destino: "Persona"}
+  - {origen: "Recolección", relacion: "en", destino: "Lote"}
+  - {origen: "Recolección", relacion: "entra_a", destino: "Beneficio"}
+  - {origen: "Beneficio", relacion: "agrupa", destino: "Recolección"}
+  - {origen: "Beneficio", relacion: "produce", destino: "Lote de café-Microlote"}
+  - {origen: "Lote de café-Microlote", relacion: "sale_de", destino: "Beneficio"}
+  - {origen: "Lote de café-Microlote", relacion: "origen", destino: "Lote"}
+  - {origen: "Lote de café-Microlote", relacion: "vendido_en", destino: "Venta"}
+  - {origen: "Lote de café-Microlote", relacion: "certificado_por", destino: "Certificación"}
+  - {origen: "Venta", relacion: "de", destino: "Lote de café-Microlote"}
+  - {origen: "Venta", relacion: "a", destino: "Comprador"}
+  - {origen: "Comprador", relacion: "compra_en", destino: "Mercado"}
+  - {origen: "Comprador", relacion: "recibe", destino: "Venta"}
+  - {origen: "Mercado", relacion: "exige", destino: "Certificación"}
+  - {origen: "Mercado", relacion: "regula", destino: "EUDR"}
+  - {origen: "Certificación", relacion: "aplica_a", destino: "Finca"}
+  - {origen: "Certificación", relacion: "aplica_a", destino: "Lote de café-Microlote"}
+  - {origen: "Certificación", relacion: "exigida_por", destino: "Mercado"}
+  - {origen: "Contenido-Publicación", relacion: "sobre", destino: "Lote"}
+  - {origen: "Contenido-Publicación", relacion: "sobre", destino: "Persona"}
+  - {origen: "Contenido-Publicación", relacion: "sobre", destino: "Concepto"}
+  - {origen: "Contenido-Publicación", relacion: "usa", destino: "Fuente"}
+  - {origen: "Indicador", relacion: "calcula_sobre", destino: "Lote"}
+  - {origen: "Indicador", relacion: "calcula_sobre", destino: "Finca"}
+  - {origen: "Fuente", relacion: "sustenta", destino: "Concepto"}
+  - {origen: "Fuente", relacion: "sustenta", destino: "Análisis"}
+reglas:
+  - Los IDs son consecutivos y nunca se reutilizan; nada se borra (se marca estado/anulado).
+  - Montos en pesos colombianos, formato $50.000.
+  - Toda instancia generada desde finca.db lleva generado_por: tools/sync_finca.py.
